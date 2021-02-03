@@ -1,17 +1,27 @@
 using module BuildHelpers
+using module Pester
+using module PSScriptAnalyzer
+using module PSDeploy
 
 $ModuleName = ( Split-Path ( Resolve-Path "$PSScriptRoot\Src\*.psd1" ).Path -Leaf ) -replace "\.psd1"
 $ModuleData = Import-PowerShellDataFile -Path "$PSScriptRoot\Src\$ModuleName.psd1"
 $ModuleVersion = [version](( & git tag --list --sort="-v:refname" | Select-Object -First 1 ).Trim('v'))
 $OutputDirectory = "$PSScriptRoot\.build\$ModuleName\$ModuleVersion"
 
-Task * Init, Build
+Task * Init, Build, Format
 
 Task Init {
     if ( Test-Path $PSScriptRoot\.build ) {
         Remove-Item $PSScriptRoot\.build -Force -Recurse
     }
     New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
+}
+
+Task Test {
+    $Result = Invoke-Pester -Path $PSScriptRoot\Tests -Output Detailed -PassThru
+    if ( $Result.Failed -gt 0 ) {
+        throw "Tests failed"
+    }
 }
 
 Task Build {
@@ -70,4 +80,12 @@ Task Build {
     $ReleaseNotes = $ModuleData.PrivateData.PSData.ReleaseNotes + $ReleaseNotes
     Update-Metadata -Path "$OutputDirectory\$ModuleName.psd1" -PropertyName "PrivateData.PSData.ReleaseNotes" -Value $ReleaseNotes
 
+}
+
+Task Format {
+    Invoke-ScriptAnalyzer -Path $OutputDirectory -Recurse -ReportSummary -Settings CodeFormatting
+}
+
+Task Publish {
+    Invoke-PSDeploy -Path $PSScriptRoot\.psdeploy.ps1
 }
