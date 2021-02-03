@@ -4,6 +4,7 @@
 # Environment
 *.env
 _temp
+.build
 
 # Chocolatey
 *.nupkg
