@@ -21,7 +21,7 @@ PrivateData = @{
         ProjectUri = 'https://github.com/Geogboe/PSChocolateyGet'
         # IconUri = ''
         ReleaseNotes = ''
-        # Prerelease = ''
+        Prerelease = 'prerelease'
         # ExternalModuleDependencies = @()
     }
 }

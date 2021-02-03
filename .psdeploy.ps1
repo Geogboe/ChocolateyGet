@@ -3,9 +3,9 @@
 Deploy PSChocolateyGet {
     By PSGalleryModule {
         FromSource "$PSScriptRoot\.build\PSChocolateyGet"
-        To "$env:PS_MODULE_REPO_NAME"
+        To "psgallery"
         WithOptions @{
-            ApiKey = $env:PS_MODULE_REPO_API_KEY
+            ApiKey = ( Get-Secret -AsPlainText psgallery_api_key )
         }
         Tagged "production"
     }
