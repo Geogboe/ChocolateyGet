@@ -6,7 +6,9 @@ Author = 'George Bowen'
 Copyright = '(c) George Bowen. All rights reserved.'
 Description = 'Build Chocolatey packages programatically using a single configuration file which follows the winget schema'
 PowerShellVersion = '7.0.0' # We need powershell 7 to do the schema validation stuff
-# RequiredModules = @()
+RequiredModules = @(
+    "powershell-yaml"
+)
 FunctionsToExport = "*"
 # ModuleList = @()
 # FileList = @()
