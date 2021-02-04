@@ -36,7 +36,17 @@ function New-ChocolateyGetPackage {
 
     # TODO - validate schema
     $PackageConfig = [PSCustomObject]( Get-Content $ConfigurationFile | ConvertFrom-Yaml )
-    $PackageDirName = $PackageConfig.AppMoniker + "." + $PackageConfig.Version
+
+    if ( $PackageConfig.Version -match ".*.\.ps1" ) {
+        $DynamicScriptPath = $PackageConfig.Version
+        Write-Debug "Retrieving version of package using dynamic script: $DynamicScriptPath..."
+        $PackageVersion = ( Get-DynamicProperty -Path $DynamicScriptPath ).Version
+    }
+    else {
+        $PackageVersion = $PackageConfig.Version
+    }
+
+    $PackageDirName = $PackageConfig.AppMoniker + "." + $PackageVersion
     $PackageOutputDir = Join-Path $OutputDirectory $PackageDirName
     $PackageToolsDir = Join-Path $PackageOutputDir "tools"
 
@@ -58,7 +68,7 @@ function New-ChocolateyGetPackage {
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
 <metadata>
     <id>$($PackageConfig.AppMoniker)</id>
-    <version>$($PackageConfig.Version)</version>
+    <version>$($PackageVersion)</version>
     <owners>$($PackageConfig.Publisher)</owners>
     <title>$($PackageConfig.Name)(Install)</title>
     <authors>$($PackageConfig.Author)</authors>
@@ -110,6 +120,26 @@ $(($PackageConfig.Description).Trim())
                 "x86" { @{ Url = "url"; Checksum = "checksum"; ChecksumType = "checksumtype" } }
             }
 
+            # Get the installer url if its a dynamic value
+            if ( $Installer.Url -match ".*.\.ps1" ) {
+                $DynamicScriptPath = $Installer.Url
+                Write-Debug "Retrieving url of installer using dynamic script: $DynamicScriptPath..."
+                $Url = ( Get-DynamicProperty -Path $DynamicScriptPath ).Url
+            }
+            else {
+                $Url = $Installer.Url
+            }
+
+            # Get the installer sha256 if its a dynamic value
+            if ( $Installer.Sha256 -match ".*.\.ps1" ) {
+                $DynamicScriptPath = $Installer.Sha256
+                Write-Debug "Retrieving Sha256 of installer using dynamic script: $DynamicScriptPath..."
+                $Sha256 = ( Get-DynamicProperty -Path $DynamicScriptPath ).Sha256
+            }
+            else {
+                $Sha256 = $Installer.Sha256
+            }
+
             # Add installation code
             $ChocoZipInstallCode = @"
 `$ErrorActionPreference = 'Stop'
@@ -118,8 +148,8 @@ $(($PackageConfig.Description).Trim())
     packageName   = `$env:ChocolateyPackageName
     unzipLocation = "$InstallDirectory"
     fileType      = 'EXE_MSI_OR_MSU' #only one of these: exe, msi, msu
-    $($Arch.Url)           = '$($Installer.Url)'
-    $($Arch.Checksum)      = '$($Installer.Sha256)'
+    $($Arch.Url)           = '$($Url)'
+    $($Arch.Checksum)      = '$($Sha256)'
     $($Arch.ChecksumType)  = 'sha256'
 }
 Install-ChocolateyZipPackage @packageArgs
@@ -140,7 +170,7 @@ Get-ChildItem "$InstallDirectory\*.exe"  | ForEach-Object {
             $ChocolateyBeforeModifyScriptContent += $ChocoZipBeforeModifyCode
 
             # Add uninstall code
-            $ZipFileName = Split-Path $Installer.Url -Leaf
+            $ZipFileName = Split-Path $Url -Leaf
             $ChocoZipUninstallCode = @"
 Uninstall-ChocolateyZipPackage -packageName `$env:ChocolateyPackageName -zipFileName '$ZipFileName'
 "@
@@ -197,4 +227,8 @@ Uninstall-ChocolateyZipPackage -packageName `$env:ChocolateyPackageName -zipFile
     # Todo - appx installer
     # Todo - msix installer
 
+    # Format code. For some reason you have to run this twice
+    Write-Debug "Formatting code..."
+    Invoke-ScriptAnalyzer -Path $PackageOutputDir -Recurse -Settings CodeFormatting -Fix | Out-Null
+    Invoke-ScriptAnalyzer -Path $PackageOutputDir -Recurse -Settings CodeFormatting -Fix | Out-Null
 }
