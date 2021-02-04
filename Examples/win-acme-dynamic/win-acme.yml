@@ -1,0 +1,36 @@
+---
+Id: win-acme.win-acme
+Name: win-acme
+AppMoniker: win-acme
+Version: ./latest.ps1
+Publisher: Wouter Tinus
+Author: Wouter Tinus
+License: Apache License 2.0
+LicenseUrl: https://github.com/WouterTinus/win-acme/blob/master/LICENSE
+MinOSVersion: 10.0.0.0
+Description: |
+  This is a ACMEv2 client for Windows that aims to be very simple to start with, but powerful enough to grow into almost every scenario.
+  * A very simple interface to create and install certificates on a local IIS server
+  * A more advanced interface for many other use cases, including Apache and Exchange
+  * Automatically creates a scheduled task to renew certificates when needed
+  * Get certificates with wildcards (*.example.com), international names (证书.example.com), OCSP Must Staple extension (optional).
+  * Re-use private keys for DANE, use EC crypto or bring your own CSR
+  * Advanced toolkit for DNS, HTTP and TLS validation: SFTP/FTPS, acme-dns, Azure, Route53, Cloudflare and many more
+  * Compatible with all popular ACME service providers, including Let’s Encrypt, ZeroSSL, DigiCert, Sectigo, Buypass, Keyon, and others
+  * Completely unattended operation from the command line
+  * Other forms of automation through manipulation of .json files
+  * Write your own Powershell .ps1 scripts to handle installation and validation
+  * Build your own plugins with C#
+Homepage: https://www.win-acme.com/
+Tags: "wacs, acme, letsencrpyt"
+# Commands: "wacs"
+InstallerType: zip
+InstallLocation: /DIR=<INSTALLPATH>
+Installers:
+  - Arch: x64
+    Url: ./latest.ps1
+    Sha256: ./latest.ps1
+    Language: en-US
+    InstallerType: zip
+    Scope: machine
+ManifestVersion: 0.1.0
