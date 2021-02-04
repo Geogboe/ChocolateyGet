@@ -8,7 +8,7 @@ $ModuleData = Import-PowerShellDataFile -Path "$PSScriptRoot\Src\$ModuleName.psd
 $ModuleVersion = [version](( & git tag --list --sort="-v:refname" | Select-Object -First 1 ).Trim('v'))
 $OutputDirectory = "$PSScriptRoot\.build\$ModuleName\$ModuleVersion"
 
-Task * Init, Build, Format
+Task * Init, Build, Format, Docs
 
 Task Init {
     if ( Test-Path $PSScriptRoot\.build ) {
