@@ -15,6 +15,7 @@ Task Init {
         Remove-Item $PSScriptRoot\.build -Force -Recurse
     }
     New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
+    New-Item -Path $OutputDirectory\Docs -ItemType Directory -Force | Out-Null
 }
 
 Task Test {
@@ -24,7 +25,7 @@ Task Test {
     }
 }
 
-Task Build {
+Task Build Init, {
 
     Copy-Item $PSScriptRoot\Src\*.psd1 $OutputDirectory -Force
     Update-Metadata -Path "$OutputDirectory\$ModuleName.psd1" -PropertyName "ModuleVersion" -Value $ModuleVersion
@@ -86,6 +87,19 @@ Task Format {
     Invoke-ScriptAnalyzer -Path $OutputDirectory -Recurse -ReportSummary -Settings CodeFormatting
 }
 
+Task Docs {
+    # Run this in a new process as it collids with other loaded libraries sometimes
+    Start-Job {
+        Import-Module PlatyPS
+        Import-Module "$using:OutputDirectory\$using:ModuleName.psd1" -Force
+        New-MarkdownHelp -ModuleName "PSChocolateyGet" -OutputFolder $using:OutputDirectory\Docs
+    } | Receive-Job -Wait -AutoRemoveJob -Force
+}
+
 Task Publish {
     Invoke-PSDeploy -Path $PSScriptRoot\.psdeploy.ps1
+}
+
+Task Cleanup {
+    Remove-Item $PSScriptRoot\.build -Force -Recurse
 }

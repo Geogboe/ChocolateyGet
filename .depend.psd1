@@ -6,6 +6,7 @@
     PSDeploy         = 'latest'
     PSScriptAnalyzer = "latest"
     InvokeBuild      = "latest"
+    PlatyPS          = 'latest'
     'git in PATH'    = @{
         DependencyType = 'Command'
         Source         = '
