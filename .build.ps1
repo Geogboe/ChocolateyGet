@@ -78,8 +78,7 @@ Task Build Init, {
         $ReleaseNotes += "$TagName [$($TagDate.ToLongDateString()) $($TagDate.ToShortTimeString())]"
         $ReleaseNotes += & git shortlog "$PreviousTag..$TagName" --no-merges --format="* [%h] %s"
     }
-    $ReleaseNotes = $ModuleData.PrivateData.PSData.ReleaseNotes + $ReleaseNotes
-    Update-Metadata -Path "$OutputDirectory\$ModuleName.psd1" -PropertyName "PrivateData.PSData.ReleaseNotes" -Value $ReleaseNotes
+    Update-Metadata -Path "$OutputDirectory\$ModuleName.psd1" -PropertyName "PrivateData.PSData.ReleaseNotes" -Value "`n$( $ReleaseNotes -join "`n" )"
 
 }
 
