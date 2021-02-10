@@ -38,7 +38,7 @@ function New-ChocolateyGetPackage {
     $PackageConfig = [PSCustomObject]( Get-Content $ConfigurationFile | ConvertFrom-Yaml )
 
     if ( $PackageConfig.Version -match ".*.\.ps1" ) {
-        $DynamicScriptPath = $PackageConfig.Version
+        $DynamicScriptPath = Resolve-DynamicScriptPath -Path $PackageConfig.Version -RelativePath $ConfigurationFile
         Write-Debug "Retrieving version of package using dynamic script: $DynamicScriptPath..."
         $PackageVersion = ( Get-DynamicProperty -Path $DynamicScriptPath ).Version
     }
@@ -122,7 +122,7 @@ $(($PackageConfig.Description).Trim())
 
             # Get the installer url if its a dynamic value
             if ( $Installer.Url -match ".*.\.ps1" ) {
-                $DynamicScriptPath = $Installer.Url
+                $DynamicScriptPath = Resolve-DynamicScriptPath -Path $PackageConfig.Version -RelativePath $ConfigurationFile
                 Write-Debug "Retrieving url of installer using dynamic script: $DynamicScriptPath..."
                 $Url = ( Get-DynamicProperty -Path $DynamicScriptPath ).Url
             }
@@ -132,7 +132,7 @@ $(($PackageConfig.Description).Trim())
 
             # Get the installer sha256 if its a dynamic value
             if ( $Installer.Sha256 -match ".*.\.ps1" ) {
-                $DynamicScriptPath = $Installer.Sha256
+                $DynamicScriptPath = Resolve-DynamicScriptPath -Path $PackageConfig.Version -RelativePath $ConfigurationFile
                 Write-Debug "Retrieving Sha256 of installer using dynamic script: $DynamicScriptPath..."
                 $Sha256 = ( Get-DynamicProperty -Path $DynamicScriptPath ).Sha256
             }
